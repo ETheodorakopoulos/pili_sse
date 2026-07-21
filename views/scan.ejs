@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Scan — Facility Entrance</title>
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/navbar.css">
+</head>
+<body>
+  <%- include('partial/navbar', { user: user, active: 'scan' }) %>
+  <main class="container">
+    <h1>Card Scan</h1>
+
+    <!-- Direction selector -->
+    <div class="direction-toggle">
+      <button type="button" id="btn-entrance" class="btn btn-direction active" onclick="setDirection('entrance')">
+        ⬇️ Entrance
+      </button>
+      <button type="button" id="btn-exit" class="btn btn-direction" onclick="setDirection('exit')">
+        Exit ❌
+      </button>
+    </div>
+
+    <!-- Card scan input -->
+    <form id="scan-form" class="scan-form">
+      <input type="hidden" name="direction" id="direction" value="entrance">
+      <div class="form-group">
+        <label>Scan / Enter Card Number</label>
+        <input type="text" name="card_number" id="card_number" autofocus placeholder="Scan card or type number...">
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">Process</button>
+    </form>
+
+    <!-- Result -->
+    <% if (error) { %><div class="alert alert-error"><%= error %></div><% } %>
+    <div id="result-area"></div>
+  </main>
+
+  <script>
+    function setDirection(dir) {
+      document.getElementById('direction').value = dir;
+      document.getElementById('btn-entrance').classList.toggle('active', dir === 'entrance');
+      document.getElementById('btn-exit').classList.toggle('active', dir === 'exit');
+      document.getElementById('card_number').focus();
+    }
+
+    document.getElementById('scan-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const direction = document.getElementById('direction').value;
+      const card_number = document.getElementById('card_number').value.trim();
+      if (!card_number) return;
+
+      const res = await fetch('/api/scan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ direction, card_number })
+      });
+      const data = await res.json();
+      const area = document.getElementById('result-area');
+
+      if (data.success) {
+        area.innerHTML = `
+          <div class="alert alert-success">
+            <h3>✅ ${data.direction === 'entrance' ? 'Entrance' : 'Exit'} Recorded</h3>
+            <p><strong>Name:</strong> ${data.name}</p>
+            <p><strong>Vehicle:</strong> ${data.plate}</p>
+            <p><strong>Status:</strong> ${data.newStatus === 'in' ? '🟢 IN' : '🔴 OUT'}</p>
+          </div>`;
+      } else {
+        area.innerHTML = `<div class="alert alert-error">❌ ${data.message}</div>`;
+      }
+      document.getElementById('card_number').value = '';
+      document.getElementById('card_number').focus();
+    });
+  </script>
+</body>
+</html>

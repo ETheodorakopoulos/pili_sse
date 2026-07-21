@@ -1,0 +1,26 @@
+<nav class="navbar">
+  <div class="navbar-brand">
+    <a href="/dashboard">Facility Entrance</a>
+  </div>
+
+  <ul class="navbar-links">
+    <li><a href="/scan" class="<%= active === 'scan' ? 'active' : '' %>">Scan</a></li>
+    <li><a href="/personnel" class="<%= active === 'personnel' ? 'active' : '' %>">Personnel</a></li>
+    <li><a href="/personnel-status" class="<%= active === 'search' ? 'active' : '' %>">Status</a></li>
+    <li><a href="/cards" class="<%= active === 'cards' ? 'active' : '' %>">Cards</a></li>
+    <li><a href="/card-history" class="<%= active === 'logs' ? 'active' : '' %>">Logs</a></li>
+    <% if (user && user.role === 'admin') { %>
+      <li><a href="/users" class="<%= active === 'users' ? 'active' : '' %>">Users</a></li>
+    <% } %>
+  </ul>
+
+  <div class="navbar-user">
+    <% if (user) { %>
+      <span class="user-name"><%= user.username %></span>
+      <span class="user-role">(<%= user.role %>)</span>
+      <a href="/logout" class="btn-logout">Logout</a>
+    <% } else { %>
+      <a href="/login" class="btn-login">Login</a>
+    <% } %>
+  </div>
+</nav>

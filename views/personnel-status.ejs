@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Personnel Status — Facility Entrance</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/navbar.css">
+</head>
+<body>
+<%- include('partial/navbar', { user: user, active: 'personnel-status' }) %>  
+<main class="container">
+    <h1>All Personnel Status</h1>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>
+            <div>Rank</div>
+            <input type="text" class="col-filter" data-col="0" placeholder="Filter..." onkeyup="filterTable()">
+          </th>
+          <th>
+            <div>Name</div>
+            <input type="text" class="col-filter" data-col="1" placeholder="Filter..." onkeyup="filterTable()">
+          </th>
+          <th>
+            <div>Card #</div>
+            <input type="text" class="col-filter" data-col="2" placeholder="Filter..." onkeyup="filterTable()">
+          </th>
+          <th>
+            <div>Plate #</div>
+            <input type="text" class="col-filter" data-col="3" placeholder="Filter..." onkeyup="filterTable()">
+          </th>
+          <th>
+            <div>Status</div>
+            <input type="text" class="col-filter" data-col="4" placeholder="Filter..." onkeyup="filterTable()">
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <% personnel.forEach(p => { %>
+          <tr>
+            <td><%= p.rank %></td>
+            <td><%= p.full_name %></td>
+            <td><%= p.card_number || '—' %></td>
+            <td><%= p.plate_number || '—' %></td>
+            <td>
+              <% if (p.vehicle_status === 'in') { %><span class="badge badge-in">IN</span><% }
+                 else { %><span class="badge badge-out">OUT</span><% } %>
+            </td>
+          </tr>
+        <% }); %>
+        <% if (personnel.length === 0) { %>
+          <tr><td colspan="5" class="empty">No personnel yet</td></tr>
+        <% } %>
+      </tbody>
+    </table>
+  </main>
+</body>
+<script>
+function filterTable() {
+  const table = document.querySelector('table tbody') || document.querySelector('table');
+  const filters = {};
+  document.querySelectorAll('.col-filter').forEach(input => {
+    const col = parseInt(input.dataset.col);
+    filters[col] = input.value.toLowerCase().trim();
+  });
+
+  const rows = document.querySelectorAll('table tbody tr');
+  rows.forEach(row => {
+    const cells = row.querySelectorAll('td');
+    let visible = true;
+    for (const [col, value] of Object.entries(filters)) {
+      if (value && cells[col] && !cells[col].textContent.toLowerCase().includes(value)) {
+        visible = false;
+        break;
+      }
+    }
+    row.style.display = visible ? '' : 'none';
+  });
+}
+</script>
+</html>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Manage Personnel — Facility Entrance</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/navbar.css">
+</head>
+<body>
+<%- include('partial/navbar', { user: user, active: 'personnel' }) %>
+  <main class="container">
+    <h1>Manage Personnel</h1>
+
+    <% if (error) { %><div class="alert alert-error"><%= error %></div><% } %>
+    <% if (success) { %><div class="alert alert-success"><%= success %></div><% } %>
+
+    <!-- Create form -->
+    <div class="card">
+      <h2>Add New Personnel</h2>
+      <form action="/personnel" method="POST" enctype="multipart/form-data"></form>
+        <div class="form-group">
+          <label for="rank">Rank</label>
+          <select name="rank" id="rank_id" required>
+          <option value="" disabled selected>Select a rank</option>
+          <% ranks.forEach(function(rank) { %>
+          <option value="<%= rank.rank %>"><%= rank.rank %></option><% }) %>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" name="full_name" required>
+        </div>
+        <div class="form-group">
+          <label>Card Number</label>
+          <input type="text" name="card_number" required>
+        </div>
+        <div class="form-group">
+          <label>Vehicle Plate Number</label>
+          <input type="text" name="plate_number" required>
+        </div>
+        <div>
+          <label for="photo">Photo</label>
+          <input type="file" name="photo" id="photo" accept="image/*" onchange="previewPhoto(event)">
+          <img id="photoPreview" src="" alt="" style="display:none; width:120px; height:120px; object-fit:cover; border-radius:8px; border:1px solid #d0d4dc; margin-top:8px;">
+        </div>
+        <button type="submit" class="btn btn-primary">Create Personnel</button>
+      </form>
+    </div>
+
+    <!-- Personnel list -->
+    <div class="card">
+      <h2>All Personnel</h2>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Rank</th><th>Name</th><th>Card #</th><th>Plate</th><th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% personnel.forEach(p => { %>
+            <tr>
+              <td><%= p.rank %></td>
+              <td><%= p.full_name %></td>
+              <td><%= p.card_number || '—' %></td>
+              <td><%= p.plate_number || '—' %></td>
+              <td>
+                <% if (p.vehicle_status === 'in') { %><span class="badge badge-in">IN</span><% }
+                   else { %><span class="badge badge-out">OUT</span><% } %>
+              </td>
+            </tr>
+          <% }); %>
+          <% if (personnel.length === 0) { %>
+            <tr><td colspan="4" class="empty">No personnel yet</td></tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </main>
+  <script>
+function previewPhoto(event) {
+  const input = event.target;
+  const preview = document.getElementById('photoPreview');
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      preview.src = e.target.result;
+      preview.style.display = 'block';
+    };
+    reader.readAsDataURL(input.files[0]);
+  } else {
+    preview.src = '';
+    preview.style.display = 'none';
+  }
+}
+</script>
+</body>
+</html>

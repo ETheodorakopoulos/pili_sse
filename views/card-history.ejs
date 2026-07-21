@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Card History — Facility Entrance</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/navbar.css">
+</head>
+<body>
+  <%- include('partial/navbar', { user: user, active: 'card-history' }) %>
+  <main class="container">
+    <h1>Card Status & History</h1>
+
+    <!-- Search by card number -->
+    <div class="card">
+      <h2>Search by Card Number</h2>
+      <form action="/card-history" method="GET" class="search-form">
+        <input type="text" name="card_number" placeholder="Enter card number..." value="<%= cardInfo ? cardInfo.card_number : '' %>" autofocus>
+        <button type="submit" class="btn btn-primary">Search</button>
+      </form>
+    </div>
+
+    <!-- OR search by personnel name -->
+    <div class="card">
+      <h2>Search by Name</h2>
+      <form action="/card-history" method="GET" class="search-form">
+        <select name="personnel_id">
+          <option value="" disabled selected>Select a person...</option>
+          <% personnel.forEach(p => { %>
+            <option value="<%= p.id %>" <%= selectedPersonnelId == p.id ? 'selected' : '' %>>
+              <%= p.full_name %><%= p.card_number ? ' (' + p.card_number + ')' : '' %>
+            </option>
+          <% }); %>
+        </select>
+        <button type="submit" class="btn btn-primary">Search</button>
+      </form>
+    </div>
+
+    <% if (searched && !cardInfo) { %>
+      <div class="alert alert-error">Card not found</div>
+    <% } %>
+
+    <% if (cardInfo) { %>
+      <div class="card">
+        <h2>Current Status</h2>
+        <div class="status-grid">
+          <div><strong>Name:</strong> <%= cardInfo.full_name %></div>
+          <div><strong>Card:</strong> <%= cardInfo.card_number %></div>
+          <div><strong>Vehicle:</strong> <%= cardInfo.plate_number %></div>
+          <div><strong>Status:</strong>
+            <% if (cardInfo.vehicle_status === 'in') { %><span class="badge badge-in">IN</span><% }
+               else { %><span class="badge badge-out">OUT</span><% } %>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>History</h2>
+        <table class="table">
+          <thead>
+            <tr><th>Time</th><th>Direction</th><th>Plate</th><th>Vehicle Status</th></tr>
+          </thead>
+          <tbody>
+            <% logs.forEach(log => { %>
+              <tr>
+                <td><%= new Date(log.created_at).toLocaleString() %></td>
+                <td><%= log.direction === 'entrance' ? '⬅️ Entrance' : 'Exit ➡️' %></td>
+                <td><%= log.plate_number || '—' %></td>
+                <td>
+                  <% if (log.vehicle_status === 'in') { %><span class="badge badge-in">IN</span><% }
+                     else { %><span class="badge badge-out">OUT</span><% } %>
+                </td>
+              </tr>
+            <% }); %>
+            <% if (logs.length === 0) { %>
+              <tr><td colspan="4" class="empty">No history yet</td></tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </main>
+</body>
+</html>
