@@ -1,83 +1,186 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Card History — Facility Entrance</title>
+  <title><%= __('Logs') %></title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="stylesheet" href="/css/navbar.css">
+  <style>
+    #search-form {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.75rem;
+    }
+
+    #search-form label {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #3d4759;
+      flex: 1 1 260px;
+    }
+
+    #search-form select,
+    #search-form input[type="date"] {
+      appearance: none;
+      -webkit-appearance: none;
+      background: #ffffff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23606b80' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 0.9rem center;
+      border: 1px solid #ced4de;
+      border-radius: 8px;
+      padding: 0.6rem 2.25rem 0.6rem 0.85rem;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: #1f2733;
+      cursor: pointer;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    /* date inputs already have a native calendar icon on the right in most
+       browsers - drop the custom chevron background for this one so they
+       don't overlap. */
+    #search-form input[type="date"] {
+      background-image: none;
+      padding-right: 0.85rem;
+      cursor: text;
+    }
+
+    #search-form select:hover,
+    #search-form input[type="date"]:hover {
+      border-color: #9aa4b5;
+    }
+
+    #search-form select:focus,
+    #search-form input[type="date"]:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
+    .card {
+      position: relative;
+      background: #ffffff;
+      border: 1px solid #2563eb;
+      border-radius: 10px;
+      padding: 1.25rem 1.5rem 1.5rem;
+      margin-bottom: 1.75rem;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: #2563eb;
+    }
+
+    .card h2 {
+      margin: 0 0 0.5rem;
+      font-size: 1.15rem;
+      color: #1f2733;
+    }
+
+    .card p {
+      margin: 0.2rem 0;
+      color: #4b5567;
+      font-size: 0.95rem;
+    }
+  </style>
 </head>
 <body>
-  <%- include('partial/navbar', { user: user, active: 'card-history' }) %>
-  <main class="container">
-    <h1>Card Status & History</h1>
+<%- include('partial/navbar', { user: user, active: 'card-history' }) %>
 
-    <!-- Search by card number -->
+<main class="container">
+  <h1><%= __('Logs') %></h1>
+
+  <form id="search-form" method="GET" action="/card-history">
+    <label><%= __('Search by Personnel') %>
+      <select name="personnel_id" id="personnel-select">
+        <option value="">— <%= __('Select personnel') %> —</option>
+        <% personnel.forEach(p => { %>
+          <option value="<%= p.id %>" <%= String(selectedPersonnelId) === String(p.id) ? 'selected' : '' %>>
+            <%= p.rank %> <%= p.full_name %>
+          </option>
+        <% }) %>
+      </select>
+    </label>
+
+    <label><%= __('Search by Vehicle') %>
+      <select name="vehicle_id" id="vehicle-select">
+        <option value="">— <%= __('Select vehicle') %> —</option>
+        <% vehicles.forEach(v => { %>
+          <option value="<%= v.id %>" <%= String(selectedVehicleId) === String(v.id) ? 'selected' : '' %>>
+            <%= v.brand %> <%= v.plate_number %>
+          </option>
+        <% }) %>
+      </select>
+    </label>
+
+    <label><%= __('Filter by Date') %>
+      <input type="date" name="log_date" id="log-date" value="<%= selectedLogDate %>">
+    </label>
+  </form>
+
+  <% if (searched && !cardInfo) { %>
+    <p class="alert alert-error">No card found for the selected criteria.</p>
+  <% } %>
+
+  <% if (cardInfo) { %>
     <div class="card">
-      <h2>Search by Card Number</h2>
-      <form action="/card-history" method="GET" class="search-form">
-        <input type="text" name="card_number" placeholder="Enter card number..." value="<%= cardInfo ? cardInfo.card_number : '' %>" autofocus>
-        <button type="submit" class="btn btn-primary">Search</button>
-      </form>
+      <h2><%= cardInfo.full_name %></h2>
+      <p>Card #: <%= cardInfo.card_number %> (<%= cardInfo.card_status %>)</p>
+      <% if (cardInfo.plate_number) { %>
+        <p>Vehicle: <%= cardInfo.plate_number %> — <%= cardInfo.vehicle_status %></p>
+      <% } %>
     </div>
 
-    <!-- OR search by personnel name -->
-    <div class="card">
-      <h2>Search by Name</h2>
-      <form action="/card-history" method="GET" class="search-form">
-        <select name="personnel_id">
-          <option value="" disabled selected>Select a person...</option>
-          <% personnel.forEach(p => { %>
-            <option value="<%= p.id %>" <%= selectedPersonnelId == p.id ? 'selected' : '' %>>
-              <%= p.full_name %><%= p.card_number ? ' (' + p.card_number + ')' : '' %>
-            </option>
-          <% }); %>
-        </select>
-        <button type="submit" class="btn btn-primary">Search</button>
-      </form>
-    </div>
+    <table class="table">
+      <thead>
+        <tr><th><%= __('Timestamp') %></th><th><%= __('Action') %></th></tr>
+      </thead>
+      <tbody>
+        <% logs.forEach(l => { %>
+          <tr>
+            <td><%= new Date(l.created_at).toDateString() %> <%= new Date(l.created_at).toTimeString().slice(0, 8) %></td>
+            <td><% if (l.direction === 'entrance') { %><span class="badge badge-in">⬇️ <%= __('Entrance') %></span><% }
+                   else { %><span class="badge badge-out">❌ <%= __('Exit') %></span><% } %></td>
+          </tr>
+        <% }) %>
+        <% if (logs.length === 0) { %>
+          <tr><td colspan="2" class="empty"><%= __('No log entries') %><% if (selectedLogDate) { %> for this date<% } %></td></tr>
+        <% } %>
+      </tbody>
+    </table>
+  <% } %>
+</main>
 
-    <% if (searched && !cardInfo) { %>
-      <div class="alert alert-error">Card not found</div>
-    <% } %>
+<script>
+  const form = document.getElementById('search-form');
+  const personnelSelect = document.getElementById('personnel-select');
+  const vehicleSelect = document.getElementById('vehicle-select');
+  const logDateInput = document.getElementById('log-date');
 
-    <% if (cardInfo) { %>
-      <div class="card">
-        <h2>Current Status</h2>
-        <div class="status-grid">
-          <div><strong>Name:</strong> <%= cardInfo.full_name %></div>
-          <div><strong>Card:</strong> <%= cardInfo.card_number %></div>
-          <div><strong>Vehicle:</strong> <%= cardInfo.plate_number %></div>
-          <div><strong>Status:</strong>
-            <% if (cardInfo.vehicle_status === 'in') { %><span class="badge badge-in">IN</span><% }
-               else { %><span class="badge badge-out">OUT</span><% } %>
-          </div>
-        </div>
-      </div>
+  // The two selects are mutually exclusive search criteria: choosing one
+  // clears the other before submitting, so the server only ever sees one of
+  // personnel_id / vehicle_id populated. The date filter is independent of
+  // both - it stays put and just narrows whichever search is active.
+  personnelSelect.addEventListener('change', () => {
+    if (personnelSelect.value) vehicleSelect.value = '';
+    form.submit();
+  });
 
-      <div class="card">
-        <h2>History</h2>
-        <table class="table">
-          <thead>
-            <tr><th>Time</th><th>Direction</th><th>Plate</th><th>Vehicle Status</th></tr>
-          </thead>
-          <tbody>
-            <% logs.forEach(log => { %>
-              <tr>
-                <td><%= new Date(log.created_at).toLocaleString() %></td>
-                <td><%= log.direction === 'entrance' ? '⬅️ Entrance' : 'Exit ➡️' %></td>
-                <td><%= log.plate_number || '—' %></td>
-                <td>
-                  <% if (log.vehicle_status === 'in') { %><span class="badge badge-in">IN</span><% }
-                     else { %><span class="badge badge-out">OUT</span><% } %>
-                </td>
-              </tr>
-            <% }); %>
-            <% if (logs.length === 0) { %>
-              <tr><td colspan="4" class="empty">No history yet</td></tr>
-            <% } %>
-          </tbody>
-        </table>
-      </div>
-    <% } %>
-  </main>
+  vehicleSelect.addEventListener('change', () => {
+    if (vehicleSelect.value) personnelSelect.value = '';
+    form.submit();
+  });
+
+  logDateInput.addEventListener('change', () => {
+    form.submit();
+  });
+</script>
 </body>
 </html>

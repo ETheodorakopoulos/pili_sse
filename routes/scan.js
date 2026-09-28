@@ -1,7 +1,7 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const pool = require('../db/pool');
-const { requireAuth } = require('../middleware/auth');
+import pool from '../db/pool.js';
+import { requireAuth, redirectIfAuthed } from '../middleware/auth.js';
 
 // GET /scan — Page 1
 router.get('/scan', requireAuth, (req, res) => {
@@ -12,6 +12,7 @@ router.get('/scan', requireAuth, (req, res) => {
 router.post('/scan', requireAuth, async (req, res) => {
   const { direction, card_number } = req.body;
   try {
+
     // Look up the card
     const cardResult = await pool.query(`
       SELECT c.*, p.id AS personnel_id, p.full_name
@@ -48,9 +49,9 @@ router.post('/scan', requireAuth, async (req, res) => {
 
     // Create log entry
     await pool.query(`
-      INSERT INTO logs (personnel_id, card_number, vehicle_id, plate_number, direction, vehicle_status)
-      VALUES ($1, $2, $3, $4, $5, $6)
-    `, [card.personnel_id, card_number, vehicle.id, vehicle.plate_number, direction, newStatus]);
+      INSERT INTO logs (personnel_id, card_number, vehicle_id, direction)
+      VALUES ($1, $2, $3, $4)
+    `, [card.personnel_id, card_number, vehicle.id, direction]);
 
     res.render('scan', {
       result: {
@@ -67,4 +68,6 @@ router.post('/scan', requireAuth, async (req, res) => {
   }
 });
 
-module.exports = router;
+
+
+export default router;

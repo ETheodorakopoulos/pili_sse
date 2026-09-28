@@ -1,96 +1,172 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Manage Personnel — Facility Entrance</title>
+  <title><%= __('Add New Personnel') %> — <%= __('Facility Entrance') %></title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="stylesheet" href="/css/navbar.css">
+  
 </head>
 <body>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script>function clearForm(formId) {
+    const $form = $('#' + formId);
+    $form[0].reset();
+    $form.find('select').prop('selectedIndex', 0);
+    $form.find('img[id$="Preview"]').attr('src', '').hide();
+}</script>
 <%- include('partial/navbar', { user: user, active: 'personnel' }) %>
   <main class="container">
-    <h1>Manage Personnel</h1>
+    <h1><%= __('Add New Personnel') %></h1>
 
     <% if (error) { %><div class="alert alert-error"><%= error %></div><% } %>
     <% if (success) { %><div class="alert alert-success"><%= success %></div><% } %>
+    <% if (success) { %><script>clearForm("personnelForm");</script> <% } %>
 
     <!-- Create form -->
     <div class="card">
-      <h2>Add New Personnel</h2>
-      <form action="/personnel" method="POST" enctype="multipart/form-data"></form>
+      <form action="/personnel" method="POST" id="personnelForm" enctype="multipart/form-data">
         <div class="form-group">
-          <label for="rank">Rank</label>
+          <label for="rank"><%= __('Rank') %></label>
           <select name="rank" id="rank_id" required>
-          <option value="" disabled selected>Select a rank</option>
+          <option value="" disabled selected><%= __('Select a rank') %></option>
           <% ranks.forEach(function(rank) { %>
           <option value="<%= rank.rank %>"><%= rank.rank %></option><% }) %>
           </select>
         </div>
         <div class="form-group">
-          <label>Full Name</label>
+          <label for="full_name"><%= __('Full Name') %></label>
           <input type="text" name="full_name" required>
         </div>
         <div class="form-group">
-          <label>Card Number</label>
+          <label for="am"><%= __('AM') %></label>
+          <input type="text" name="am" required>
+        </div>
+        <div class="form-group">
+          <label><%= __('Card Number') %></label>
           <input type="text" name="card_number" required>
         </div>
         <div class="form-group">
-          <label>Vehicle Plate Number</label>
-          <input type="text" name="plate_number" required>
+          <label><%= __('Vehicle Type') %></label>
+          <div class="direction-toggle">
+         <input type="hidden" name="vehicle" id="vehicle" value="car">
+          <button type="button" id="btn-car" class="btn btn-direction active" title="Car" style="width: 30%; margin: 5%; font-size:55px">
+        🚗</button>
+        <button type="button" id="btn-motorcycle" class="btn btn-direction" title="Motorcycle" style="width: 30%; margin: 5%; font-size:55px">
+        🏍️</button>
         </div>
-        <div>
-          <label for="photo">Photo</label>
-          <input type="file" name="photo" id="photo" accept="image/*" onchange="previewPhoto(event)">
-          <img id="photoPreview" src="" alt="" style="display:none; width:120px; height:120px; object-fit:cover; border-radius:8px; border:1px solid #d0d4dc; margin-top:8px;">
         </div>
-        <button type="submit" class="btn btn-primary">Create Personnel</button>
+        <div class="form-group">
+          <input type="hidden" name="brand" id="brand">
+          <label for="car_brand" id="car_brand_label"><%= __('Car Brand') %></label>
+          <select name="car_brand" id="car_brand_id" required>
+          <option value="" disabled selected><%= __('Select a brand') %></option>
+          <% car_brands.forEach(function(car_brand) { %>
+          <option value="<%= car_brand.name %>"><%= car_brand.name %></option><% }) %>
+          </select>
+          <label for="moto_brand" class="hide" id="moto_brand_label"><%= __('Motorcycle Brand') %></label>
+          <select name="moto_brand" id="moto_brand_id" class="hide">
+          <option value="" disabled selected><%= __('Select a brand') %></option>
+          <% moto_brands.forEach(function(moto_brand) { %>
+          <option value="<%= moto_brand.name %>"><%= moto_brand.name %></option><% }) %>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="plate_number"><%= __('Vehicle Plate Number') %></label>
+          <input type="text" name="plate_number" id="plate_number" placeholder="ABZ 1234" required>
+        </div>
+        <div class="form-group">
+          <label for="color"><%= __('Vehicle Color') %></label>
+          <select name="color" id="color_id" required>
+          <option value="" disabled selected><%= __('Select a color') %></option>
+          <% colors.forEach(function(color) { %>
+          <option value="<%= color.name %>"><%= color.name %></option><% }) %>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="unit"><%= __('Unit') %></label>
+          <select name="unit" id="unit_id" required>
+            <option value="" disabled selected><%= __('Select a unit') %></option>
+          <% units.forEach(function(unit) { %>
+          <option value="<%= unit.name %>"><%= unit.name %></option><% }) %>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="photo"><%= __('Photo') %></label>
+          <input type="file" name="photo" id="photo" accept="image/*">
+          <img id="photoPreview" src="" alt="" style="display:none; width:150px; height:150px; object-fit:cover; border-radius:8px; border:1px solid #d0d4dc; margin-top:8px;">
+        </div>
+        <button type="submit" id="btn_create_pers" class="btn btn-primary btn-block"><%= __('Submit') %></button>
       </form>
-    </div>
-
-    <!-- Personnel list -->
-    <div class="card">
-      <h2>All Personnel</h2>
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Rank</th><th>Name</th><th>Card #</th><th>Plate</th><th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% personnel.forEach(p => { %>
-            <tr>
-              <td><%= p.rank %></td>
-              <td><%= p.full_name %></td>
-              <td><%= p.card_number || '—' %></td>
-              <td><%= p.plate_number || '—' %></td>
-              <td>
-                <% if (p.vehicle_status === 'in') { %><span class="badge badge-in">IN</span><% }
-                   else { %><span class="badge badge-out">OUT</span><% } %>
-              </td>
-            </tr>
-          <% }); %>
-          <% if (personnel.length === 0) { %>
-            <tr><td colspan="4" class="empty">No personnel yet</td></tr>
-          <% } %>
-        </tbody>
-      </table>
     </div>
   </main>
   <script>
-function previewPhoto(event) {
-  const input = event.target;
-  const preview = document.getElementById('photoPreview');
-  if (input.files && input.files[0]) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      preview.src = e.target.result;
-      preview.style.display = 'block';
-    };
-    reader.readAsDataURL(input.files[0]);
-  } else {
-    preview.src = '';
-    preview.style.display = 'none';
-  }
+const photoInput = document.getElementById('photo');
+const photoPreview = document.getElementById('photoPreview');
+
+if (photoInput) {
+  photoInput.addEventListener('change', () => {
+    if (photoInput.files && photoInput.files[0]) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        photoPreview.src = e.target.result;
+        photoPreview.style.display = 'block';
+      };
+      reader.readAsDataURL(photoInput.files[0]);
+    } else {
+      photoPreview.src = '';
+      photoPreview.style.display = 'none';
+    }
+  });
 }
+</script>
+<script>
+     $('#car_brand_id').on('change', function() {
+      $('#brand').val($(this).val());
+    }).trigger('change');
+
+    $('#moto_brand_id').on('change', function() {
+      $('#brand').val($(this).val());
+    }).trigger('change');
+</script>
+<script>
+const btnCar = document.getElementById('btn-car');
+const carList = document.getElementById('car_brand_id');
+const carLbl = document.getElementById('car_brand_label');
+const btnMotor = document.getElementById('btn-motorcycle');
+const motorLbl = document.getElementById('moto_brand_label');
+const motorList = document.getElementById('moto_brand_id');
+const veh = document.getElementById('vehicle');
+
+
+
+  btnCar.addEventListener('click', () => {
+      motorList.required = false;
+      carList.required = true;
+      motorLbl.classList.add('hide');
+      motorList.classList.add('hide');
+      carLbl.classList.remove('hide');
+      carList.classList.remove('hide');
+      veh.value = 'car';
+      btnCar.classList.add('active');
+      btnMotor.classList.remove('active');
+    });
+
+  btnMotor.addEventListener('click', () => {
+      motorList.required = true;
+      carList.required = false;
+      motorLbl.classList.remove('hide');
+      motorList.classList.remove('hide');
+      carLbl.classList.add('hide');
+      carList.classList.add('hide');
+      veh.value = 'motorcycle';
+      btnMotor.classList.add('active');
+      btnCar.classList.remove('active');
+
+  });
+
+
+//document.getElementById('plate_number').focus();
+
 </script>
 </body>
 </html>

@@ -1,8 +1,8 @@
-const express = require('express');
-const bcrypt = require('bcrypt');
+import express from 'express';
+import bcrypt from 'bcrypt';
 const router = express.Router();
-const pool = require('../db/pool');
-const { requireAuth, redirectIfAuthed } = require('../middleware/auth');
+import pool from '../db/pool.js';
+import { requireAuth, redirectIfAuthed } from '../middleware/auth.js';
 
 // GET /login
 router.get('/login', redirectIfAuthed, (req, res) => {
@@ -33,10 +33,10 @@ router.post('/login', redirectIfAuthed, async (req, res) => {
 });
 
 // POST /logout
-router.post('/logout', (req, res) => {
+router.get('/logout', (req, res) => {
   req.session.destroy(() => {
     res.redirect('/login');
   });
 });
 
-module.exports = router;
+export default router;

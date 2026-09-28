@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title><%= __('Edit Personnel') %></title>
+  <style>
+    form { font-family: system-ui, sans-serif; max-width: 800px; margin: 2rem auto; }
+    fieldset { margin-bottom: 1.5rem; }
+    .vehicle-row { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr auto; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem; }
+    .vehicle-row select, .vehicle-row input { width: 100%; box-sizing: border-box; }
+    .remove-btn { background: #c0392b; color: white; border: none; border-radius: 4px; padding: 0.4rem 0.6rem; cursor: pointer; }
+    .add-btn { background: lightpink; color: #323232; border: none; border-radius: 4px; padding: 0.5rem 1rem; cursor: pointer; margin-top: 0.5rem; }
+    .save-btn { background: #2563eb; color: white; border: none; border-radius: 4px; padding: 0.6rem 1.2rem; cursor: pointer; font-size: 1rem; }
+    .return-btn { background: gold; color: #323232; border: none; border-radius: 4px; padding: 0.6rem 1.2rem; cursor: pointer; font-size: 1rem; }
+    .error { color: #c0392b; }
+    .success { color: #2c7a4b; }
+  </style>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/navbar.css">
+</head>
+<body>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<%- include('partial/navbar', { user: user, active: 'personnel-edit' }) %>
+
+  <% if (error) { %> <p class="alert alert-error"><%= error %></p> <% } %>
+  <p class="alert alert-error" id="client-error" style="display: none;"></p>
+  <% if (success) { %> <p class="alert alert-success"><%= success %></p> <% } %>
+
+  <% if (personnel) { %>
+  <form id="personnel-form" method="POST" action="/personnel-edit/<%= personnel.id %>"  enctype="multipart/form-data">
+
+    <div id="personal-data-fieldset">
+      <h2><%= __('Personal Data') %></h2>
+      <div class="form-group">
+      <label for="rank"><%= __('Rank') %></label>
+        <select name="rank">
+          <% ranks.forEach(r => { %>
+            <option value="<%= r.rank %>" <%= personnel.rank === r.rank ? 'selected' : '' %>>
+              <%= r.rank %>
+            </option>
+          <% }) %>
+        </select>
+      </div>
+      <div class="form-group">
+      <label for="name"><%= __('Full Name') %></label>
+        <input type="text" name="name" value="<%= personnel.full_name %>" required />
+      </div>
+      <div class="form-group">
+      <label for="am"><%= __('AM') %></label>
+          <input type="text" name="am" value="<%= personnel.am %>" required>
+      </div>    
+      <div class="form-group">
+      <label for="unit"><%= __('Unit') %></label>
+          <select name="unit" id="unit_id" required>
+          <!-- <option value="<%= personnel.unit %>" disabled selected><%= personnel.unit %></option> -->
+          <option value="ΣΣΕ/ΕΠΙΤΕΛΕΙΟ" <%= personnel.unit === "ΣΣΕ/ΕΠΙΤΕΛΕΙΟ" ? 'selected' : '' %>>ΣΣΕ/ΕΠΙΤΕΛΕΙΟ</option>
+          <option value="ΣΣΕ/ΣΥΝΤΑΓΜΑ" <%= personnel.unit === "ΣΣΕ/ΣΥΝΤΑΓΜΑ" ? 'selected' : '' %>>ΣΣΕ/ΣΥΝΤΑΓΜΑ</option>
+          <option value="ΣΣΕ/ΛΔ" <%= personnel.unit === "ΣΣΕ/ΛΔ" ? 'selected' : '' %>>ΣΣΕ/ΛΔ</option>
+          <option value="ΚΕΤΑΚ" <%= personnel.unit === "ΚΕΤΑΚ" ? 'selected' : '' %>>ΚΕΤΑΚ</option></select>
+      </div>    
+      <div class="form-group">
+      <label for="card_number"><%= __('Card Number') %></label>
+          <input type="text" name="card_number" value="<%= personnel.card_number %>" required>
+      </div>    
+      <div class="form-group">
+      <label for="photo"><%= __('Photo') %></label>
+          <input type="file" name="photo" id="photo" accept="image/*" value="<%= personnel.photo %>">
+          <img id="photoPreview" src="/photos/<%= personnel.photo %>" alt="" style=" width:160px; height:160px; object-fit:cover; border-radius:8px; border:1px solid #d0d4dc; margin-top:8px; margin-left: 40%;">
+      </div>    
+
+      <h2><%= __('Vehicles') %></h2>
+
+      <div id="vehicles-container">
+        <!-- Existing vehicles are rendered server-side below, right here.
+             "selected" on type/brand/color/status is computed once by EJS
+             against the actual DB value, so there's no client-side data
+             matching to get out of sync. -->
+        <% (vehicles || []).forEach(v => { %>
+          <% const vType = (v.type || 'car').trim().toLowerCase(); %>
+          <% const vBrandList = vType === 'motorcycle' ? moto_brands : car_brands; %>
+          <div class="vehicle-row" data-id="<%= v.id %>">
+            <select class="v-type">
+              <option value="car" <%= vType === 'car' ? 'selected' : '' %>><%= __('Car') %></option>
+              <option value="motorcycle" <%= vType === 'motorcycle' ? 'selected' : '' %>><%= __('Motorcycle') %></option>
+            </select>
+
+            <select class="v-brand">
+              <% vBrandList.forEach(b => { %>
+                <option value="<%= b.name %>" <%= b.name === v.brand ? 'selected' : '' %>><%= b.name %></option>
+              <% }) %>
+              <% if (v.brand && !vBrandList.some(b => b.name === v.brand)) { %>
+                <option value="<%= v.brand %>" selected><%= v.brand %> (not in list)</option>
+              <% } %>
+            </select>
+
+            <select class="v-color">
+              <% colors.forEach(c => { %>
+                <option value="<%= c.name %>" <%= c.name === v.color ? 'selected' : '' %>><%= c.name %></option>
+              <% }) %>
+              <% if (v.color && !colors.some(c => c.name === v.color)) { %>
+                <option value="<%= v.color %>" selected><%= v.color %> (not in list)</option>
+              <% } %>
+            </select>
+
+            <input class="v-plate" type="text" placeholder="Plate number" value="<%= v.plate_number || '' %>" />
+
+            <!-- ASSUMPTION: status is "in"/"out". Adjust if that's wrong. -->
+            <select class="v-status">
+              <option value="in" <%= v.status === 'in' ? 'selected' : '' %>><%= __('In') %></option>
+              <option value="out" <%= v.status === 'out' ? 'selected' : '' %>><%= __('Out') %></option>
+            </select>
+
+            <button type="button" class="remove-btn">✕</button>
+          </div>
+        <% }) %>
+      </div>
+
+      <button type="button" class="add-btn" id="add-vehicle-btn" style="text-align:center; margin:auto; display: block; margin-bottom: 10px; font-weight: 700;">➕<%= __('Add Vehicle') %></button>
+
+      <!-- The full vehicles array is serialized into this hidden field right
+           before submit. The server never sees individual vehicle_x inputs -
+           it just gets one JSON blob it can diff against the DB. -->
+      <input type="hidden" name="vehicles" id="vehicles-json" />
+
+    <!-- Change-tracking flags: set to "true" by JS the moment anything in the
+         corresponding section is actually touched. The backend uses these to
+         skip the UPDATE/reconcile step for a section nothing changed in — but
+         still validates independently of them (never trust the client alone
+         for correctness, only for this write-skipping optimization). -->
+    <input type="hidden" name="personnel_changed" id="personnel-changed" value="false" />
+    <input type="hidden" name="vehicles_changed" id="vehicles-changed" value="false" />
+    <div class="direction-toggle">
+      <button type="submit" class="save-btn btn-primary btn-block" style="text-align:center; margin:auto; display: block; margin-bottom: 20px; margin-top: 30px;">💾<%= __('Save') %></button>
+      <button type="button" class="return-btn btn-block" id="return" style="text-align:center; margin:auto; display: block; margin-bottom: 20px; margin-top: 30px;">🔙<%= __('Return') %></button>
+    </div>
+    </form>
+  <% } %>
+</div>
+  <!-- Row template, cloned by JS ONLY for brand-new blank rows added via the
+       "+ Add Vehicle" button. Existing vehicles never touch this template -
+       they're rendered server-side above, so they can never be out of sync
+       with it. -->
+  <template id="vehicle-row-template">
+    <div class="vehicle-row" data-id="">
+      <select class="v-type">
+        <option value="car"><%= __('Car') %></option>
+        <option value="motorcycle"><%= __('Motorcycle') %></option>
+      </select>
+      <select class="v-brand"></select>
+      <select class="v-color"></select>
+      <input class="v-plate" type="text" placeholder="<%= __('Plate number') %>" />
+      <select class="v-status">
+        <option value="in"><%= __('In') %></option>
+        <option value="out"><%= __('Out') %></option>
+      </select>
+      <button type="button" class="remove-btn">✕</button>
+    </div>
+  </template>
+
+  <!-- Server-injected reference data for populating a NEW blank row's brand
+       list when its type changes, and for the initial blank row's brand
+       list on creation. Existing rows never read from this - see above. -->
+  <script type="application/json" id="car-brands-data"><%- JSON.stringify(car_brands || []) %></script>
+  <script type="application/json" id="moto-brands-data"><%- JSON.stringify(moto_brands || []) %></script>
+  <script type="application/json" id="colors-data"><%- JSON.stringify(colors || []) %></script>
+  <script>
+const photoInput = document.getElementById('photo');
+const photoPreview = document.getElementById('photoPreview');
+
+if (photoInput) {
+  photoInput.addEventListener('change', () => {
+    if (photoInput.files && photoInput.files[0]) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        photoPreview.src = e.target.result;
+        photoPreview.style.display = 'block';
+      };
+      reader.readAsDataURL(photoInput.files[0]);
+      console.log(photoInput.files[0]);
+
+    } 
+  });
+}
+</script>
+  <script>
+    const carBrands  = JSON.parse(document.getElementById('car-brands-data').textContent);
+    const motoBrands = JSON.parse(document.getElementById('moto-brands-data').textContent);
+    const colors     = JSON.parse(document.getElementById('colors-data').textContent);
+
+    const container = document.getElementById('vehicles-container');
+    const template  = document.getElementById('vehicle-row-template');
+
+    if (!container) {
+      console.error('vehicles-container not found on the page — the personnel form did not render. ' +
+        'Check that `personnel` was truthy when the page was rendered server-side.');
+    } else {
+
+    function populateSelect(select, options, selectedName) {
+      select.innerHTML = '';
+      options.forEach(opt => {
+        const o = document.createElement('option');
+        o.value = opt.name;
+        o.textContent = opt.name;
+        if (selectedName != null && opt.name === selectedName) o.selected = true;
+        select.appendChild(o);
+      });
+      if (selectedName && !options.some(opt => opt.name === selectedName)) {
+        const o = document.createElement('option');
+        o.value = selectedName;
+        o.textContent = selectedName + ' (not in list)';
+        o.selected = true;
+        select.appendChild(o);
+      }
+    }
+
+    function brandsForType(type) {
+      return (type || '').trim().toLowerCase() === 'motorcycle' ? motoBrands : carBrands;
+    }
+
+    const personnelChangedInput = document.getElementById('personnel-changed');
+    const vehiclesChangedInput  = document.getElementById('vehicles-changed');
+
+    const personalDataFieldset = document.getElementById('personal-data-fieldset');
+    if (personalDataFieldset) {
+      personalDataFieldset.addEventListener('input', () => { personnelChangedInput.value = 'true'; });
+      personalDataFieldset.addEventListener('change', () => { personnelChangedInput.value = 'true'; });
+    }
+
+    function markVehiclesChanged() { vehiclesChangedInput.value = 'true'; }
+
+    // Wires up the "change type -> repopulate brands" and "remove" behavior
+    // on any row, whether it was rendered server-side or added via JS.
+    function wireRowEvents(row) {
+      const typeSelect  = row.querySelector('.v-type');
+      const brandSelect = row.querySelector('.v-brand');
+      const removeBtn   = row.querySelector('.remove-btn');
+
+      // Any edit within this row counts as a vehicles change.
+      row.addEventListener('input', markVehiclesChanged);
+      row.addEventListener('change', markVehiclesChanged);
+
+      typeSelect.addEventListener('change', () => {
+        populateSelect(brandSelect, brandsForType(typeSelect.value), null);
+      });
+
+      removeBtn.addEventListener('click', () => {
+        row.remove();
+        markVehiclesChanged(); // removing a vehicle is itself a change
+        // Deletion is implicit: on save, any DB vehicle id not present in
+        // the serialized array gets deleted server-side.
+      });
+    }
+
+    // Wire up events on the server-rendered existing rows.
+    container.querySelectorAll('.vehicle-row').forEach(wireRowEvents);
+
+    // At least one vehicle is mandatory: the first row (whether it's an
+    // existing vehicle rendered server-side, or the auto-added blank row
+    // below when there were none) can never be removed. New rows are always
+    // appended after it, so this only needs to run once, here.
+    function lockFirstRowRemoveButton() {
+      const firstRow = container.querySelector('.vehicle-row');
+      if (!firstRow) return;
+      const btn = firstRow.querySelector('.remove-btn');
+      btn.disabled = true;
+      btn.title = 'At least one vehicle is required';
+    }
+
+    document.getElementById("return").onclick = function () {
+        location.href = "/personnel-status";
+    };
+    // Adds one brand-new, blank row (used only by the "+ Add Vehicle" button).
+    function addBlankVehicleRow() {
+      const node = template.content.cloneNode(true);
+      const row  = node.querySelector('.vehicle-row');
+
+      const typeSelect  = row.querySelector('.v-type');
+      const brandSelect = row.querySelector('.v-brand');
+      const colorSelect = row.querySelector('.v-color');
+
+      typeSelect.value = 'car';
+      populateSelect(brandSelect, brandsForType('car'), null);
+      populateSelect(colorSelect, colors, null);
+
+      wireRowEvents(row);
+      container.appendChild(row);
+      markVehiclesChanged(); // adding a vehicle is itself a change
+    }
+
+    if (container.children.length === 0) addBlankVehicleRow(); // start with one blank row for convenience
+    lockFirstRowRemoveButton();
+
+    document.getElementById('add-vehicle-btn').addEventListener('click', addBlankVehicleRow);
+
+    // Serialize all rows into the hidden field just before submit.
+    const form = document.getElementById('personnel-form');
+    if (form) {
+      form.addEventListener('submit', (e) => {
+        const rows = Array.from(container.querySelectorAll('.vehicle-row'));
+        const payload = rows.map(row => ({
+          id: row.dataset.id || null,
+          type: row.querySelector('.v-type').value,
+          brand: row.querySelector('.v-brand').value,
+          color: row.querySelector('.v-color').value,
+          plate_number: row.querySelector('.v-plate').value,
+          status: row.querySelector('.v-status').value,
+        }));
+
+        // Safety net: the locked first-row remove button should make this
+        // impossible through normal use, but block submission anyway in
+        // case that lock is ever bypassed (e.g. JS tampering, future bug).
+        const clientError = document.getElementById('client-error');
+        if (payload.length === 0) {
+          e.preventDefault();
+          clientError.textContent = 'At least one vehicle is required.';
+          clientError.style.display = '';
+          clientError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          return;
+        }
+        clientError.style.display = 'none';
+
+        document.getElementById('vehicles-json').value = JSON.stringify(payload);
+      });
+    }
+    } // end of `if (container)` guard
+  </script>
+</body>
+</html>

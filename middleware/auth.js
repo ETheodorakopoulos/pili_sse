@@ -1,5 +1,5 @@
 // Requires login — redirects to /login if not authenticated
-function requireAuth(req, res, next) {
+export function requireAuth(req, res, next) {
   if (req.session && req.session.userId) {
     return next();
   }
@@ -7,11 +7,11 @@ function requireAuth(req, res, next) {
 }
 
 // Redirects authenticated users away from login page
-function redirectIfAuthed(req, res, next) {
+export function redirectIfAuthed(req, res, next) {
   if (req.session && req.session.userId) {
     return res.redirect('/');
   }
   return next();
 }
 
-module.exports = { requireAuth, redirectIfAuthed };
+export default { requireAuth, redirectIfAuthed };

@@ -1,9 +1,9 @@
-const express = require('express');
-const bcrypt = require('bcrypt');
+import bcrypt from 'bcrypt';
+import express from 'express';
 const router = express.Router();
-const pool = require('../db/pool');
-const { requireAuth } = require('../middleware/auth');
-const { requireAdmin } = require('../middleware/rbac');
+import pool from '../db/pool.js';
+import { requireAuth, redirectIfAuthed } from '../middleware/auth.js';
+import { requireAdmin } from '../middleware/rbac.js';
 
 // GET /users — Page 5 (admin only)
 router.get('/users', requireAuth, requireAdmin, async (req, res) => {
@@ -41,4 +41,4 @@ router.post('/users', requireAuth, requireAdmin, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

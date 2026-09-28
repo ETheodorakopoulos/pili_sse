@@ -1,5 +1,8 @@
-const { Pool } = require('pg');
-require('dotenv').config();
+import pkg from 'pg';
+import 'dotenv/config';
+
+// Extract the Pool class from the pg package
+const { Pool } = pkg;
 
 const pool = new Pool({
   user: process.env.DB_USER,
@@ -9,4 +12,5 @@ const pool = new Pool({
   database: process.env.DB_NAME,
 });
 
-module.exports = pool;
+// Use ES Module export instead of module.exports
+export default pool;

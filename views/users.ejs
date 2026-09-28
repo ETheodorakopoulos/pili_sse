@@ -1,45 +1,45 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Manage Users — Facility Entrance</title>
+  <title><%= __('Manage Users') %> — <%= __('Facility Entrance') %></title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="stylesheet" href="/css/navbar.css">
 </head>
 <body>
 <%- include('partial/navbar', { user: user, active: 'users' }) %>
   <main class="container">
-    <h1>Manage Users</h1>
+    <h1><%= __('Manage Users') %></h1>
 
     <% if (error) { %><div class="alert alert-error"><%= error %></div><% } %>
     <% if (success) { %><div class="alert alert-success"><%= success %></div><% } %>
 
     <div class="card">
-      <h2>Create New User</h2>
+      <h2><%= __('Create New User') %></h2>
       <form action="/users" method="POST">
         <div class="form-group">
-          <label>Username</label>
+          <label><%= __('Username') %></label>
           <input type="text" name="username" required>
         </div>
         <div class="form-group">
-          <label>Password</label>
+          <label><%= __('Password') %></label>
           <input type="password" name="password" required>
         </div>
         <div class="form-group">
-          <label>Role</label>
+          <label><%= __('Role') %></label>
           <select name="role" required>
-            <option value="user">User</option>
-            <option value="admin">Admin</option>
+            <option value="user"><%= __('User') %></option>
+            <option value="admin"><%= __('Admin') %></option>
           </select>
         </div>
-        <button type="submit" class="btn btn-primary">Create User</button>
+        <button type="submit" class="btn btn-primary"><strong><%= __('Create User') %></strong></button>
       </form>
     </div>
 
     <div class="card">
-      <h2>All Users</h2>
+      <h2><%= __('All Users') %></h2>
       <table class="table">
         <thead>
-          <tr><th>Username</th><th>Role</th><th>Created</th></tr>
+          <tr><th><%= __('Username') %></th><th><%= __('Role') %></th><th><%= __('Created') %></th></tr>
         </thead>
         <tbody>
           <% users.forEach(u => { %>

@@ -1,47 +1,76 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Scan — Facility Entrance</title>
+  <title><%= __('Card Scan') %> — <%= __('Facility Entrance') %></title>
 <link rel="stylesheet" href="/css/style.css">
 <link rel="stylesheet" href="/css/navbar.css">
 </head>
 <body>
   <%- include('partial/navbar', { user: user, active: 'scan' }) %>
   <main class="container">
-    <h1>Card Scan</h1>
+    <h1><%= __('Card Scan') %></h1>
 
     <!-- Direction selector -->
     <div class="direction-toggle">
-      <button type="button" id="btn-entrance" class="btn btn-direction active" onclick="setDirection('entrance')">
-        ⬇️ Entrance
+      <button type="button" id="btn-entrance" class="btn btn-direction active">
+        ⬇️ <%= __('Entrance') %>
       </button>
-      <button type="button" id="btn-exit" class="btn btn-direction" onclick="setDirection('exit')">
-        Exit ❌
+      <button type="button" id="btn-exit" class="btn btn-direction">
+        ❌ <%= __('Exit') %>
       </button>
     </div>
-
-    <!-- Card scan input -->
-    <form id="scan-form" class="scan-form">
-      <input type="hidden" name="direction" id="direction" value="entrance">
-      <div class="form-group">
-        <label>Scan / Enter Card Number</label>
-        <input type="text" name="card_number" id="card_number" autofocus placeholder="Scan card or type number...">
-      </div>
-      <button type="submit" class="btn btn-primary btn-block">Process</button>
-    </form>
-
+    <table>
+      <tr>
+        <td>  <!-- Card scan input -->
+          <form id="scan-form" class="scan-form">
+            <input type="hidden" name="direction" id="direction" value="entrance">
+            <div class="form-group">
+              <label><%= __('Scan / Enter Card Number') %></label>
+              <input type="text" name="card_number" id="card_number" autofocus>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">🪪 <%= __('Submit') %></button>
+          </form>
+        </td>
+        <td rowspan="2" width="450px"><div id="result-area"></div></td>
+      </tr>
+      <tr>
+        <td><!-- Plate number input -->
+          <form id="plate-form" class="scan-form">
+            <div class="form-group">
+              <label><%= __('Enter Plate Number') %></label>
+              <input type="text" name="plate_number" id="plate_number" placeholder="ABZ 1234">
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">🚘 <%= __('Submit') %></button>
+          </form>
+        </td>
+      </tr>
+    </table>
+  
     <!-- Result -->
     <% if (error) { %><div class="alert alert-error"><%= error %></div><% } %>
-    <div id="result-area"></div>
+    
   </main>
 
   <script>
-    function setDirection(dir) {
-      document.getElementById('direction').value = dir;
-      document.getElementById('btn-entrance').classList.toggle('active', dir === 'entrance');
-      document.getElementById('btn-exit').classList.toggle('active', dir === 'exit');
-      document.getElementById('card_number').focus();
-    }
+const btnEntrance = document.getElementById('btn-entrance');
+const btnExit = document.getElementById('btn-exit');
+const dir = document.getElementById('direction');
+const card_number = document.getElementById('card_number');
+const plate_number = document.getElementById('plate_number');
+
+  btnEntrance.addEventListener('click', () => {
+    dir.value = 'entrance';
+    btnEntrance.classList.add('active');
+    btnExit.classList.remove('active');
+    //card_number.focus();
+  });
+
+  btnExit.addEventListener('click', () => {
+    dir.value = 'exit';
+    btnEntrance.classList.remove('active');
+    btnExit.classList.add('active');
+    //card_number.focus();
+  });
 
     document.getElementById('scan-form').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -55,22 +84,58 @@
         body: JSON.stringify({ direction, card_number })
       });
       const data = await res.json();
-      const area = document.getElementById('result-area');
+      const area = document.getElementById('result-area'); 
 
-      if (data.success) {
-        area.innerHTML = `
-          <div class="alert alert-success">
-            <h3>✅ ${data.direction === 'entrance' ? 'Entrance' : 'Exit'} Recorded</h3>
-            <p><strong>Name:</strong> ${data.name}</p>
-            <p><strong>Vehicle:</strong> ${data.plate}</p>
-            <p><strong>Status:</strong> ${data.newStatus === 'in' ? '🟢 IN' : '🔴 OUT'}</p>
-          </div>`;
-      } else {
-        area.innerHTML = `<div class="alert alert-error">❌ ${data.message}</div>`;
-      }
-      document.getElementById('card_number').value = '';
-      document.getElementById('card_number').focus();
-    });
+    if (data.success) {
+    area.innerHTML = `
+    <div class="alert alert-success">
+      <h3>✅ ${data.direction === 'entrance' ? 'Entrance' : 'Exit'} Recorded</h3><br>
+      <p><strong>Photo:</strong> ${
+        data.photo
+          ? `<img src="/photos/${data.photo}" alt="${data.name}" style="width:170px; height:170px; object-fit:cover; border-radius:6px; margin-left:100px;">`
+          : `<span class="empty">—</span>`
+      }</p>
+      <p><strong>Name:</strong> ${data.name}</p>
+      <p><strong>Vehicle:</strong> ${data.plate}</p>
+      <p><strong>Status:</strong> ${data.newStatus === 'in' ? '🟢 IN' : '🔴 OUT'}</p>
+    </div>`;
+    } else {
+      area.innerHTML = `<div class="alert alert-error">⛔ ${data.message}</div>`;
+    }
+  })
+
+  document.getElementById('plate-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const direction = document.getElementById('direction').value;
+      const plate_number = document.getElementById('plate_number').value.trim();
+      if (!plate_number) return;
+
+      const res = await fetch(`/api/scan/${plate_number}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ direction, plate_number })
+      });
+      const data = await res.json();
+      const area = document.getElementById('result-area'); 
+
+    if (data.success) {
+    area.innerHTML = `
+    <div class="alert alert-success">
+      <h3>✅ ${data.direction === 'entrance' ? 'Entrance' : 'Exit'} Recorded</h3><br>
+      <p><strong>Photo:</strong> ${
+        data.photo
+          ? `<img src="/photos/${data.photo}" alt="${data.name}" style="width:170px; height:170px; object-fit:cover; border-radius:6px; margin-left:100px;">`
+          : `<span class="empty">—</span>`
+      }</p>
+      <p><strong>Name:</strong> ${data.name}</p>
+      <p><strong>Vehicle:</strong> ${data.plate}</p>
+      <p><strong>Status:</strong> ${data.newStatus === 'in' ? '🟢 IN' : '🔴 OUT'}</p>
+    </div>`;
+    } else {
+      area.innerHTML = `<div class="alert alert-error">⛔ ${data.message}</div>`;
+    }
+  })
+
   </script>
 </body>
 </html>

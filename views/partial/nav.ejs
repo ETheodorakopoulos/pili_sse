@@ -1,18 +1,18 @@
 <nav class="navbar">
-  <div class="nav-brand">🚪 Facility Entrance</div>
+  <div class="nav-brand"><%= __('Facility Entrance') %></div>
   <div class="nav-links">
-    <a href__="/scan" class="<%= req.path === '/scan' ? 'active' : '' %>">Scan</a>
-    <a href__="/card-history" class="<%= req.path === '/card-history' ? 'active' : '' %>">Card History</a>
-    <a href__="/personnel-status" class="<%= req.path === '/personnel-status' ? 'active' : '' %>">Personnel Status</a>
+    <a href__="/scan" class="<%= req.path === '/scan' ? 'active' : '' %>"><%= __('Scan') %></a>
+    <a href__="/card-history" class="<%= req.path === '/card-history' ? 'active' : '' %>"><%= __('Card History') %></a>
+    <a href__="/personnel-status" class="<%= req.path === '/personnel-status' ? 'active' : '' %>"><%= __('Personnel Status') %></a>
     <% if (user && user.role === 'admin') { %>
-      <a href__="/personnel" class="<%= req.path === '/personnel' ? 'active' : '' %>">Manage Personnel</a>
-      <a href__="/users" class="<%= req.path === '/users' ? 'active' : '' %>">Manage Users</a>
+      <a href__="/personnel" class="<%= req.path === '/personnel' ? 'active' : '' %>"><%= __('Manage Personnel') %></a>
+      <a href__="/users" class="<%= req.path === '/users' ? 'active' : '' %>"><%= __('Manage Users') %></a>
     <% } %>
   </div>
   <div class="nav-user">
     <span><%= user.username %> (<%= user.role %>)</span>
     <form action="/logout" method="POST" style="display:inline">
-      <button type="submit" class="btn btn-sm">Logout</button>
+      <button type="submit" class="btn btn-sm"><%= __('Logout') %></button>
     </form>
   </div>
 </nav>

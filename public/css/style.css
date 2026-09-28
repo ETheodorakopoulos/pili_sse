@@ -1,5 +1,13 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+.hide{
+  display: none;
+}
+
+.vehicle-div{
+  display: none;
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   background: #f0f2f5;
@@ -12,7 +20,7 @@ body {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #667eea 0%, #7574c3 100%);
 }
 .auth-card {
   background: #fff;
@@ -60,7 +68,7 @@ body {
 
 /* Forms */
 .form-group { margin-bottom: 16px; }
-.form-group label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px; }
+.form-group label { margin-bottom: 6px; font-weight: 500; font-size: 14px; }
 .form-group input, .form-group select {
   width: 100%;
   padding: 10px 12px;
@@ -80,30 +88,41 @@ body {
   font-weight: 500;
   background: #e0e0e0;
   color: #333;
-  text-decoration: none;
   display: inline-block;
 }
-.btn-primary { background: #667eea; color: #fff; }
-.btn-primary:hover { background: #5568d3; }
-.btn-block { width: 100%; }
+.btn-primary { 
+  background: palegreen; 
+  color: #331212; 
+  transition: transform 0.3s ease, background-color 0.3s ease;
+  border-radius: 8px;}
+.btn-primary:hover { 
+  transform: scale(1.05); 
+  background-color: orangered;}
+.btn-block {  min-height: 70px; font-size: 25px;
+  font-weight: 700; margin-left: 25%;}
 .btn-sm { padding: 6px 12px; font-size: 13px; }
-
+#btn_create_pers{ margin-left: 40%;}
 /* Direction toggle */
 .direction-toggle { display: flex; gap: 16px; margin-bottom: 24px; }
 .btn-direction {
   flex: 1;
   padding: 20px;
-  font-size: 20px;
+  font-size: 25px;
   font-weight: 700;
   background: #fff;
-  border: 2px solid #ddd;
+  min-height: 100px;
+  transition: transform 0.3s ease, background-color 0.3s ease;
+  border-radius: 8px;
 }
-.btn-direction.active { border-color: #00c853; background: #00e676; color: #003d00; }
 
-.scan-form { max-width: 500px; margin: 0 auto 24px; }
+.btn-direction.active { border-color: whitesmoke; background:orange; color: #003d00; }
+.btn-direction:hover {
+  transform: scale(1.05); 
+  background-color: orangeRED;}
+.scan-form { max-width: 500px;  margin-left: 0%;} /*margin: 0 auto 24px;*/
 
 /* Alerts */
-.alert { padding: 16px; border-radius: 8px; margin-bottom: 16px; }
+.alert { padding: 16px; border-radius: 8px; margin-bottom: 16px; width: 75%; max-width: 500px; margin: 0 auto 24px; }
 .alert-error { background: #fee; color: #c33; border: 1px solid #fcc; }
 .alert-success { background: #efe; color: #363; border: 1px solid #cfc; }
 .alert h3 { margin-bottom: 8px; }
@@ -111,7 +130,7 @@ body {
 /* Table */
 .table { width: 100%; border-collapse: collapse; }
 .table th, .table td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
-.table th { font-size: 13px; text-transform: uppercase; color: #888; }
+.table th { font-size: 13px; text-transform: capitalize; color: #888; font-weight: bold;}
 .table .empty { text-align: center; color: #999; padding: 24px; }
 
 /* Badges */
@@ -152,3 +171,38 @@ th > div {
   font-weight: 600;
   font-size: 13px;
 }
+
+#error-msg{
+  display: none;
+}
+
+#success-msg{
+  display: none;
+}
+
+.col_header{
+  font-weight: 700;
+  font-size: 15px;
+  color: #003d00;
+}
+
+#login-logo{
+  max-width: 100px;
+  max-height: 120px;
+  display: flex; align-items: center;
+  margin-left: 34%;
+}
+
+#nav-bar-logo{
+  max-width: 26px;
+  max-height: 35px;
+  padding-top: 10px;
+  padding-right: 5px;
+  margin: auto;
+}
+
+.btn-delete:hover {
+  background-color: turquoise;}
+
+.btn-edit:hover {
+  background-color: turquoise;}
